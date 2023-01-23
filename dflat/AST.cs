@@ -66,6 +66,7 @@ namespace DFLAT {
         Char,
         String,
         Bool,
+        Null,
     }
 
     interface Expression {
@@ -79,8 +80,12 @@ namespace DFLAT {
         public ExpressionType type() => ExpressionType.Error;
     }
 
-    // not an expression, used for operator parsing
+    // not really an expression
+    // but it's used for operator parsing
     class OperatorExpression : Expression {
+        // TODO
+        // this is the only dependency on Token
+        // divergence of this dependency would be nice
         public Token operatorToken;
 
         public ExpressionType type() => ExpressionType.Operator;
@@ -190,6 +195,12 @@ namespace DFLAT {
         public ExpressionType type() => ExpressionType.Index;
     }
     
+    class IdExpression : Expression {
+        public string value;
+
+        public ExpressionType type() => ExpressionType.Id;
+    }
+
     class IntExpression : Expression {
         public long value;
 
@@ -218,6 +229,10 @@ namespace DFLAT {
         public bool value;
 
         public ExpressionType type() => ExpressionType.Bool;
+    }
+
+    class NullExpression : Expression {
+        public ExpressionType type() => ExpressionType.Null;
     }
 
     class Parameter {
