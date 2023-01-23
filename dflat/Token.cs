@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace dflat {
+namespace DFLAT {
     enum TokenType {
         Eof,
         Error,

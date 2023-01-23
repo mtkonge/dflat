@@ -2,15 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace dflat
-{
-    interface Lexer
-    {
-        Token next();
-    }
-
-    class LexerImplementation : Lexer
-    {
+namespace DFLAT {
+    class Lexer {
         private const string DIGITS = "1234567890";
         private const string ID_CHARS = "abcdefghijklmnopqrstuvwxyzæøåABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ_";
         private string text;
@@ -20,37 +13,26 @@ namespace dflat
 
         private Queue<Token> tokens = new Queue<Token> { };
 
-        private bool done()
-        {
-            return index >= this.text.Length;
-        }
-
-        private void step()
-        {
+        private bool done() => index >= this.text.Length;
+        
+        private void step() {
             index++;
-            if (!done())
-            {
-                if (this.text[index - 1] == '\n')
-                {
+            if (!done()) {
+                if (this.text[index - 1] == '\n') {
                     line++;
                     column = 1;
-                }
-                else
-                {
+                } else {
                     column++;
                 }
             }
         }
 
-        private Token make_number()
-        {
+        private Token make_number() {
             string value = this.text[index].ToString();
             step();
             int dots = 0;
-            while (!done() && (char.IsDigit(this.text[index])) || text[index] == '.')
-            {
-                if (this.text[index] == '.' && dots < 1)
-                {
+            while (!done() && (char.IsDigit(this.text[index])) || text[index] == '.') {
+                if (this.text[index] == '.' && dots < 1) {
                     if (dots >= 1)
                         break;
                     dots++;
@@ -63,8 +45,7 @@ namespace dflat
             return new Token(type, value, column, line);
         }
 
-        private TokenType identifier_token_type(string value)
-        {
+        private TokenType identifier_token_type(string value) {
             if (value == "if")
                 return TokenType.If;
             else if (value == "while")
@@ -107,12 +88,10 @@ namespace dflat
                 return TokenType.Id;
         }
 
-        private Token make_name_or_keyword()
-        {
+        private Token make_name_or_keyword() {
             string value = this.text[index].ToString();
             step();
-            while (!done() && (ID_CHARS.Contains(this.text[index])))
-            {
+            while (!done() && (ID_CHARS.Contains(this.text[index]))) {
                 value += this.text[index];
                 step();
             }
@@ -120,52 +99,39 @@ namespace dflat
             return new Token(identifier_token_type(value), value, column, line);
         }
 
-        private Token single_char(TokenType type)
-        {
+        private Token single_char(TokenType type) {
             var t = new Token(type, this.text[index].ToString(), column, line);
             step();
             return t;
         }
 
-        private Token make_char()
-        {
+        private Token make_char() {
             string value = text[index].ToString();
             step();
             if (done())
-            {
                 return new Token(TokenType.Error, "unexpected end of char literal", column, line);
-            }
             value += text[index];
-            if (text[index] == '\\')
-            {
+            if (text[index] == '\\') {
                 step();
                 if (done())
-                {
                     return new Token(TokenType.Error, "unexpected end of char literal", column, line);
-                }
                 value += text[index];
             }
             step();
             if (done())
-            {
                 return new Token(TokenType.Error, "unexpected end of char literal", column, line);
-            }
             if (text[index] != '\'')
-            {
                 return new Token(TokenType.Error, "expected `'` at end of char literal", column, line);
-            }
             value += text[index];
             step();
             return new Token(TokenType.Char, value, column, line);
         }
 
-        private Token make_string()
-        {
+        private Token make_string() {
             string value = text[index].ToString();
             step();
             bool escaped = false;
-            while (!done() && !(!escaped && text[index] == '\"'))
-            {
+            while (!done() && !(!escaped && text[index] == '\"')) {
                 if (escaped)
                     escaped = false;
                 else if (text[index] == '\\')
@@ -181,69 +147,47 @@ namespace dflat
         }
 
         private Token make_single_or_double(
-            TokenType case_single, TokenType case_double, char second)
-        {
+            TokenType case_single, TokenType case_double, char second) {
             string value = text[index].ToString();
             step();
-            if (!done() && text[index] == second)
-            {
+            if (!done() && text[index] == second) {
                 var t = new Token(case_double, value + text[index], column, index);
                 step();
                 return t;
-            }
-            else
-            {
+            } else {
                 return new Token(case_single, value, column, index);
             }
         }
 
         private Token make_single_or_two_double(TokenType case_single,
             TokenType case_double_a, char second_a,
-            TokenType case_double_b, char second_b)
-        {
+            TokenType case_double_b, char second_b) {
             var value = text[index].ToString();
             var single_or_double_a = make_single_or_double(case_single, case_double_a, second_a);
             if (single_or_double_a.type == case_single && !done()
-                && text[index] == second_b)
-            {
+                && text[index] == second_b) {
                 var t = new Token(case_double_b, value + text[index], column, line);
                 step();
                 return t;
-            }
-            else
-            {
+            } else {
                 return single_or_double_a;
             }
-
         }
 
-
-        private void tokenize()
-        {
-            if (this.text.Length == 0)
-            {
+        private void tokenize() {
+            if (this.text.Length == 0) {
                 tokens.Enqueue(new Token(TokenType.Eof, "", column, line));
                 return;
             }
-
-            while (index < this.text.Length)
-            {
-                if (char.IsDigit(this.text[index]))
-                {
+            while (index < this.text.Length) {
+                if (char.IsDigit(this.text[index])) {
                     tokens.Enqueue(make_number());
-                }
-                else if (ID_CHARS.Contains(this.text[index]))
-                {
+                } else if (ID_CHARS.Contains(this.text[index])) {
                     tokens.Enqueue(make_name_or_keyword());
-                }
-                else if (this.text[index] == ' ')
-                {
+                } else if (this.text[index] == ' ') {
                     step();
-                }
-                else
-                {
-                    switch (this.text[index])
-                    {
+                } else {
+                    switch (this.text[index]) {
                         case '\'': tokens.Enqueue(make_char()); break;
                         case '"': tokens.Enqueue(make_string()); break;
                         case '+': tokens.Enqueue(single_char(TokenType.Plus)); break;
@@ -306,49 +250,38 @@ namespace dflat
                             tokens.Enqueue(new Token(TokenType.Error, errorMsg, column, line));
                             break;
                     }
-
                 }
             }
         }
-        private void push_slash_or_comment()
-        {
+
+        private void push_slash_or_comment() {
             var value = text[index].ToString();
             var current_column = this.column;
             var current_line = this.line;
             step();
-            if (!done() && text[index] == '/')
-            {
+            if (!done() && text[index] == '/') {
                 while (!done() && text[index] != '\n')
                     step();
-            }
-            else if (!done() && text[index] == '*')
-            {
+            } else if (!done() && text[index] == '*') {
                 step();
                 if (done())
                     tokens.Enqueue(new Token(TokenType.Error, "unexpected end of multiline comment", column, line));
                 var last = text[index];
                 step();
-                while (!done() && !(last == '*' && text[index] == '/'))
-                {
+                while (!done() && !(last == '*' && text[index] == '/')) {
                     last = text[index];
                     step();
                 }
-                if (done() || last != '*' || text[index] != '/')
-                {
+                if (done() || last != '*' || text[index] != '/') {
                     tokens.Enqueue(new Token(TokenType.Error, "unexpected end of multiline comment", column, line));
                 }
                 step();
-            }
-            else
-            {
+            } else {
                 tokens.Enqueue(new Token(TokenType.Slash, value, current_column, current_line));
             }
         }
 
-
-
-        public LexerImplementation(string text)
-        {
+        public Lexer(string text) {
             this.text = text;
             this.index = 0;
             this.column = 1;
@@ -356,15 +289,8 @@ namespace dflat
             this.tokenize();
         }
 
+        public Token next() => this.tokens.Dequeue();
+        public Token current() => this.tokens.Peek();
 
-        public Token next()
-        {
-            return this.tokens.Dequeue();
-        }
-
-        public Token current()
-        {
-            return this.tokens.Peek();
-        }
     }
 }
