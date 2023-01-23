@@ -21,6 +21,11 @@ member ->
     | method
     | field
 
+constructor -> "(" constructor_parameters ")" block
+    "pub":? "new" 
+
+constructor_parameters -> "self" ("," parameters):?
+
 method ->
     "pub":? "fn" Id
     "(" method_parameters ")"
