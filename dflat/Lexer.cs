@@ -4,8 +4,8 @@ using System.Text;
 
 namespace DFLAT {
     class Lexer {
-        private const string DIGITS = "1234567890";
-        private const string ID_CHARS = "abcdefghijklmnopqrstuvwxyzæøåABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ_";
+        private const string digits = "1234567890";
+        private const string idChars = "abcdefghijklmnopqrstuvwxyzæøåABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ_";
         private string text;
         private int index;
         private int column;
@@ -27,7 +27,7 @@ namespace DFLAT {
             }
         }
 
-        private Token make_number() {
+        private Token makeNumber() {
             string value = this.text[index].ToString();
             step();
             int dots = 0;
@@ -45,7 +45,7 @@ namespace DFLAT {
             return new Token(type, value, column, line);
         }
 
-        private TokenType identifier_token_type(string value) {
+        private TokenType identifierTokenType(string value) {
             if (value == "if")
                 return TokenType.If;
             else if (value == "while")
@@ -88,24 +88,24 @@ namespace DFLAT {
                 return TokenType.Id;
         }
 
-        private Token make_name_or_keyword() {
+        private Token makeNameOrKeyword() {
             string value = this.text[index].ToString();
             step();
-            while (!done() && (ID_CHARS.Contains(this.text[index]))) {
+            while (!done() && (idChars.Contains(this.text[index]))) {
                 value += this.text[index];
                 step();
             }
 
-            return new Token(identifier_token_type(value), value, column, line);
+            return new Token(identifierTokenType(value), value, column, line);
         }
 
-        private Token single_char(TokenType type) {
+        private Token singleChar(TokenType type) {
             var t = new Token(type, this.text[index].ToString(), column, line);
             step();
             return t;
         }
 
-        private Token make_char() {
+        private Token makeChar() {
             string value = text[index].ToString();
             step();
             if (done())
@@ -127,7 +127,7 @@ namespace DFLAT {
             return new Token(TokenType.Char, value, column, line);
         }
 
-        private Token make_string() {
+        private Token makeString() {
             string value = text[index].ToString();
             step();
             bool escaped = false;
@@ -146,31 +146,31 @@ namespace DFLAT {
             return new Token(TokenType.String, value, column, line);
         }
 
-        private Token make_single_or_double(
-            TokenType case_single, TokenType case_double, char second) {
+        private Token makeSingleOrDouble(
+            TokenType caseSingle, TokenType caseDouble, char second) {
             string value = text[index].ToString();
             step();
             if (!done() && text[index] == second) {
-                var t = new Token(case_double, value + text[index], column, index);
+                var t = new Token(caseDouble, value + text[index], column, index);
                 step();
                 return t;
             } else {
-                return new Token(case_single, value, column, index);
+                return new Token(caseSingle, value, column, index);
             }
         }
 
-        private Token make_single_or_two_double(TokenType case_single,
-            TokenType case_double_a, char second_a,
-            TokenType case_double_b, char second_b) {
+        private Token makeSingleOrTwoDouble(TokenType caseSingle,
+            TokenType caseDoubleA, char secondA,
+            TokenType caseDoubleB, char secondB) {
             var value = text[index].ToString();
-            var single_or_double_a = make_single_or_double(case_single, case_double_a, second_a);
-            if (single_or_double_a.type == case_single && !done()
-                && text[index] == second_b) {
-                var t = new Token(case_double_b, value + text[index], column, line);
+            var singleOrDoubleA = makeSingleOrDouble(caseSingle, caseDoubleA, secondA);
+            if (singleOrDoubleA.type == caseSingle && !done()
+                && text[index] == secondB) {
+                var t = new Token(caseDoubleB, value + text[index], column, line);
                 step();
                 return t;
             } else {
-                return single_or_double_a;
+                return singleOrDoubleA;
             }
         }
 
@@ -181,69 +181,69 @@ namespace DFLAT {
             }
             while (index < this.text.Length) {
                 if (char.IsDigit(this.text[index])) {
-                    tokens.Enqueue(make_number());
-                } else if (ID_CHARS.Contains(this.text[index])) {
-                    tokens.Enqueue(make_name_or_keyword());
+                    tokens.Enqueue(makeNumber());
+                } else if (idChars.Contains(this.text[index])) {
+                    tokens.Enqueue(makeNameOrKeyword());
                 } else if (this.text[index] == ' ') {
                     step();
                 } else {
                     switch (this.text[index]) {
-                        case '\'': tokens.Enqueue(make_char()); break;
-                        case '"': tokens.Enqueue(make_string()); break;
-                        case '+': tokens.Enqueue(single_char(TokenType.Plus)); break;
-                        case '-': tokens.Enqueue(make_single_or_two_double(TokenType.Plus, TokenType.MinusEqual, '=', TokenType.ThinArrow, '>')); break;
+                        case '\'': tokens.Enqueue(makeChar()); break;
+                        case '"': tokens.Enqueue(makeString()); break;
+                        case '+': tokens.Enqueue(singleChar(TokenType.Plus)); break;
+                        case '-': tokens.Enqueue(makeSingleOrTwoDouble(TokenType.Plus, TokenType.MinusEqual, '=', TokenType.ThinArrow, '>')); break;
                         case '*':
-                            tokens.Enqueue(make_single_or_double(
+                            tokens.Enqueue(makeSingleOrDouble(
                                 TokenType.Asterisk, TokenType.Exponentation, '*'));
                             break;
-                        case '/': push_slash_or_comment(); break;
-                        case '%': tokens.Enqueue(single_char(TokenType.Percent)); break;
+                        case '/': pushSlashOrComment(); break;
+                        case '%': tokens.Enqueue(singleChar(TokenType.Percent)); break;
                         case '!':
-                            tokens.Enqueue(make_single_or_double(
+                            tokens.Enqueue(makeSingleOrDouble(
                                 TokenType.Error, TokenType.ExclamationEqual, '='));
                             break;
-                        case '&': tokens.Enqueue(single_char(TokenType.Ampersand)); break;
+                        case '&': tokens.Enqueue(singleChar(TokenType.Ampersand)); break;
                         case '<':
-                            tokens.Enqueue(make_single_or_double(
+                            tokens.Enqueue(makeSingleOrDouble(
                                 TokenType.Lt, TokenType.LtEqual, '='));
                             break;
                         case '>':
-                            tokens.Enqueue(make_single_or_double(
+                            tokens.Enqueue(makeSingleOrDouble(
                                 TokenType.Gt, TokenType.GtEqual, '='));
                             break;
                         case '=':
-                            tokens.Enqueue(make_single_or_double(
+                            tokens.Enqueue(makeSingleOrDouble(
                                 TokenType.Equal, TokenType.DoubleEqual, '='));
                             break;
                         case '(':
-                            tokens.Enqueue(single_char(TokenType.LParen));
+                            tokens.Enqueue(singleChar(TokenType.LParen));
                             break;
                         case ')':
-                            tokens.Enqueue(single_char(TokenType.RParen));
+                            tokens.Enqueue(singleChar(TokenType.RParen));
                             break;
                         case '{':
-                            tokens.Enqueue(single_char(TokenType.LBrace));
+                            tokens.Enqueue(singleChar(TokenType.LBrace));
                             break;
                         case '}':
-                            tokens.Enqueue(single_char(TokenType.RBrace));
+                            tokens.Enqueue(singleChar(TokenType.RBrace));
                             break;
                         case '[':
-                            tokens.Enqueue(single_char(TokenType.LBracket));
+                            tokens.Enqueue(singleChar(TokenType.LBracket));
                             break;
                         case ']':
-                            tokens.Enqueue(single_char(TokenType.RBracket));
+                            tokens.Enqueue(singleChar(TokenType.RBracket));
                             break;
                         case ',':
-                            tokens.Enqueue(single_char(TokenType.Comma));
+                            tokens.Enqueue(singleChar(TokenType.Comma));
                             break;
                         case ':':
-                            tokens.Enqueue(single_char(TokenType.Colon));
+                            tokens.Enqueue(singleChar(TokenType.Colon));
                             break;
                         case ';':
-                            tokens.Enqueue(single_char(TokenType.Semicolon));
+                            tokens.Enqueue(singleChar(TokenType.Semicolon));
                             break;
                         case '.':
-                            tokens.Enqueue(single_char(TokenType.Dot));
+                            tokens.Enqueue(singleChar(TokenType.Dot));
                             break;
                         default:
                             string errorMsg = "unexpected char '" + text[index] + "'";
@@ -254,10 +254,10 @@ namespace DFLAT {
             }
         }
 
-        private void push_slash_or_comment() {
+        private void pushSlashOrComment() {
             var value = text[index].ToString();
-            var current_column = this.column;
-            var current_line = this.line;
+            var currentColumn = this.column;
+            var currentLine = this.line;
             step();
             if (!done() && text[index] == '/') {
                 while (!done() && text[index] != '\n')
@@ -277,7 +277,7 @@ namespace DFLAT {
                 }
                 step();
             } else {
-                tokens.Enqueue(new Token(TokenType.Slash, value, current_column, current_line));
+                tokens.Enqueue(new Token(TokenType.Slash, value, currentColumn, currentLine));
             }
         }
 
