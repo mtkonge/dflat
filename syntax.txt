@@ -7,15 +7,33 @@ class MyClass {
         self.property_2 = propery_2;
     }
 
-    fn my_method(self) {
+    fn my_method1(self) {
         self.property_1++;
         self.property_2--;
     }
 }
 
-my_class_1 = MyClass()
+class MyInheritedClass extends MyClass {
+    property_3: string;
+    constructor(property_3: string) {
+        super();
+        self.property_3: string;
+    }
 
-my_class_1.my_method()
+    fn my_method2(self) {
+        self.property_1 = 0;
+        self.property_2 = 0;
+        self.property_3 = "Lorem ipsum dolor sit amet";
+    }
+}
+
+
+my_class_1 = MyClass()
+my_class_1.my_method1()
+
+my_inherited_class = MyInheritedClass(42);
+my_inherited_class.my_method1(5);
+my_inherited_class.my_method2();
 
 fn function(param) {
     param += 69;
