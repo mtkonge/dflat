@@ -22,8 +22,14 @@ namespace dflat {
         For,
         Break,
         Continue,
+        Colon,
+        Comma,
+        Semicolon,
+        Dot,
         Fn,
         Return,
+        Mut,
+        Let,
         Class,
         New,
         Pub,
@@ -41,12 +47,19 @@ namespace dflat {
 
         DoubleEqual,
         Equal,
+        Exponentation,
         PlusEqual,
         MinusEqual,
         AsteriskEqual,
         SlashEqual,
         PercentEqual,
+        ThinArrow,
+        Ampersand,
         Plus,
+        Minus,
+        Asterisk,
+        Slash,
+        Percent,
         LtEqual,
         Lt,
         GtEqual,
@@ -55,8 +68,15 @@ namespace dflat {
     }
 
     struct Token {
-        TokenType type;
+        public readonly TokenType type;
         String value;
-        int line, column;
+        int column, line;
+
+        public Token(TokenType type, String value, int column, int line) {
+            this.type = type;
+            this.value = value;
+            this.column = column;
+            this.line = line;
+        }
     }
 }
