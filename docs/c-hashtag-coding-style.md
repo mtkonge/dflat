@@ -11,6 +11,10 @@ Braces go on the same line
 namespace {
     class MyClass {
         private myMethod() {
+            var myLocal = new MyStruct {
+                valueA = 5,
+                valueB = 5,
+            };
             if (myValue) {
                 for (int i = 0; i < 0; i++) {
 
@@ -34,6 +38,11 @@ namespace MyNamespace
     {
         private myMethod()
         {
+            var myLocal = new MyStruct
+            {
+                valueA = 5,
+                valueB = 5,
+            };
             if (myValue)
             {
                 for (int i = 0; i < 0; i++)
@@ -63,6 +72,11 @@ All values are `camelCase`, all types are `PascalCase`.
 
 ```cs
 namespace MyNamespace {
+    enum MyEnum {
+        OptionOne,
+        OptionTwo,
+        OptionThree,
+    }
     class MyClass {
         private string myField = "";
         private static const int myStaticField = 123;
@@ -80,6 +94,11 @@ namespace MyNamespace {
 
 ```cs
 namespace my_Namespace {
+    enum My_enum {
+        optionOne,
+        OPTION_TWO,
+        option_three,
+    }
     class myClass {
         private string MyField = "";
         private static const int MY_STATIC_FIELD = 123;
