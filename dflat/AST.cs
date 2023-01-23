@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace dflat {
+namespace DFLAT {
 
     enum TypeType {
         Error,
@@ -13,14 +13,14 @@ namespace dflat {
         TypeType type();
     }
     
-    struct ErrorType : Type {
+    class ErrorType : Type {
         public int line, column;
         public string message;
 
         public TypeType type() => TypeType.Error;
     }
 
-    struct IdType : Type {
+    class IdType : Type {
         public string value;
 
         public TypeType type() => TypeType.Id;
@@ -35,14 +35,14 @@ namespace dflat {
         PatternType type();
     }
 
-    struct ErrorPattern : Pattern {
+    class ErrorPattern : Pattern {
         public int line, column;
         public string message;
 
         public PatternType type() => PatternType.Error;
     }
 
-    struct IdPattern : Pattern {
+    class IdPattern : Pattern {
         public string value;
 
         public PatternType type() => PatternType.Id;
@@ -71,28 +71,28 @@ namespace dflat {
         ExpressionType type();
     }
 
-    struct ErrorExpression : Expression {
+    class ErrorExpression : Expression {
         public int line, column;
         public string message;
 
         public ExpressionType type() => ExpressionType.Error;
     }
 
-    struct IfExpression : Expression {
+    class IfExpression : Expression {
         public Expression condition;
         public Expression body;
 
         public ExpressionType type() => ExpressionType.If;
     }
 
-    struct WhileExpression : Expression {
+    class WhileExpression : Expression {
         public Expression condition;
         public Expression body;
 
         public ExpressionType type() => ExpressionType.While;
     }
 
-    struct ForExpression : Expression {
+    class ForExpression : Expression {
         public Parameter subject;
         public Expression value;
         public Expression body;
@@ -100,7 +100,7 @@ namespace dflat {
         public ExpressionType type() => ExpressionType.For;
     }
 
-    struct BlockExpression : Expression {
+    class BlockExpression : Expression {
         public Statement[] statements;
         public Expression result;
 
@@ -116,7 +116,7 @@ namespace dflat {
         Modulus,
     }
 
-    struct AssignExpression : Expression {
+    class AssignExpression : Expression {
         public Expression subject;
         public Expression value;
         public AssignType assignType;
@@ -141,7 +141,7 @@ namespace dflat {
         Or,
     }
 
-    struct BinaryExpression : Expression {
+    class BinaryExpression : Expression {
         public Expression left;
         public Expression right;
         public BinaryType binaryType;
@@ -154,59 +154,59 @@ namespace dflat {
         Negate,
     }
 
-    struct UnaryExpression : Expression {
+    class UnaryExpression : Expression {
         public Expression subject;
         public UnaryType unaryType;
 
         public ExpressionType type() => ExpressionType.Unary;
     }
 
-    struct CallExpression : Expression {
+    class CallExpression : Expression {
         public Expression subject;
         public Expression[] arguments;
 
         public ExpressionType type() => ExpressionType.Call;
     }
 
-    struct MemberExpression : Expression {
+    class MemberExpression : Expression {
         public Expression subject;
         public Expression value;
 
         public ExpressionType type() => ExpressionType.Member;
     }
 
-    struct IndexExpression : Expression {
+    class IndexExpression : Expression {
         public Expression subject;
         public Expression value;
 
         public ExpressionType type() => ExpressionType.Index;
     }
     
-    struct IntExpression : Expression {
+    class IntExpression : Expression {
         public long value;
 
         public ExpressionType type() => ExpressionType.Int;
     }
 
-    struct FloatExpression : Expression {
+    class FloatExpression : Expression {
         public double value;
 
         public ExpressionType type() => ExpressionType.Float;
     }
 
-    struct CharExpression : Expression {
+    class CharExpression : Expression {
         public char value;
 
         public ExpressionType type() => ExpressionType.Char;
     }
 
-    struct StringExpression : Expression {
+    class StringExpression : Expression {
         public string value;
 
         public ExpressionType type() => ExpressionType.String;
     }
 
-    struct BoolExpression : Expression {
+    class BoolExpression : Expression {
         public bool value;
 
         public ExpressionType type() => ExpressionType.Bool;
@@ -229,7 +229,7 @@ namespace dflat {
         StatementType type();
     }
 
-    struct ErrorStatement : Statement {
+    class ErrorStatement : Statement {
         public int line, column;
         public string message;
 
@@ -247,7 +247,7 @@ namespace dflat {
         public Expression body;
     }
 
-    struct ClassStatement : Statement {
+    class ClassStatement : Statement {
         public string subject;
         public Field[] fields;
         public Method[] methods;
@@ -255,7 +255,7 @@ namespace dflat {
         public StatementType type() => StatementType.Class;
     }
 
-    struct FnStatement : Statement {
+    class FnStatement : Statement {
         public string subject;
         public Parameter[] parameters;
         public Type returnType;
@@ -264,7 +264,7 @@ namespace dflat {
         public StatementType type() => StatementType.Fn;
     }
 
-    struct LetStatement : Statement {
+    class LetStatement : Statement {
         public Parameter subject;
 
         public StatementType type() => StatementType.Let;
