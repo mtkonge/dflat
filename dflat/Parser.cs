@@ -12,12 +12,12 @@ namespace dflat {
         }
 
         public Expression parseExpr() {
-            lexer.current().type switch {
+            return lexer.current().type switch {
                 TokenType.If => this.parseIf(),
                 TokenType.While => this.parseWhile(),
                 TokenType.For => this.parseFor(),
                 TokenType.LBrace => this.parseBlock(),
-                _ => throw new ParserError("unexpected token"),
+                _ => this.parseOperations(),
             };
         }
 
