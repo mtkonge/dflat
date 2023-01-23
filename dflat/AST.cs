@@ -101,7 +101,7 @@ namespace dflat {
     }
 
     struct BlockExpression : Expression {
-        public Statement[] statements
+        public Statement[] statements;
         public Expression result;
 
         public ExpressionType type() => ExpressionType.Blcok;
