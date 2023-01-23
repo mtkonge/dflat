@@ -3,7 +3,7 @@
 
 ## Braces
 
-Braces go on the same line
+Braces go on the same line.
 
 ##### DO
 
@@ -66,7 +66,9 @@ namespace MyNamespace
 
 All values are `camelCase`, all types are `PascalCase`. 
 
-`enum`-values are considered types and should be `PascalCase`
+Functions are values.
+
+`enum`-values are considered types and should be `PascalCase`.
 
 ##### DO
 
