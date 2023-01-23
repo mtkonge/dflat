@@ -40,5 +40,5 @@ fn function(param) {
 }
 
 let mut my_var_1 = 0;
-let mut my_array string[] = ["bing", "chilling"];
+let mut my_array = ["bing", "chilling"];
 let mut my_var_2 = function(params);
