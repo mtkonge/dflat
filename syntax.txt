@@ -27,9 +27,8 @@ class MyInheritedClass extends MyClass {
     }
 }
 
-
-my_class_1 = MyClass()
-my_class_1.my_method1()
+my_class_1 = MyClass();
+my_class_1.my_method1();
 
 my_inherited_class = MyInheritedClass(42);
 my_inherited_class.my_method1(5);
@@ -41,5 +40,5 @@ fn function(param) {
 }
 
 let mut my_var_1 = 0;
-
+let mut my_array string[] = ["bing", "chilling"];
 let mut my_var_2 = function(params);
