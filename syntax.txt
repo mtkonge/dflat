@@ -1,8 +1,8 @@
 class MyClass {
-    public property_1;
+    pub property_1;
     property_2; // private by default
 
-    constructor(property_1, property_2) {
+    new(property_1, property_2) {
         self.property_1 = propery_1;
         self.property_2 = propery_2;
     }
@@ -15,7 +15,7 @@ class MyClass {
 
 class MyInheritedClass extends MyClass {
     property_3: string;
-    constructor(property_3: string) {
+    new(property_3: string) {
         super();
         self.property_3: string;
     }
