@@ -1,4 +1,6 @@
 
+top_level -> statement:*
+
 statement ->
     | class
     | fn
