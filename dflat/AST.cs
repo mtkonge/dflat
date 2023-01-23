@@ -50,6 +50,7 @@ namespace DFLAT {
 
     enum ExpressionType {
         Error,
+        Operator, // not an expression, used for operator parsing
         If,
         While,
         For,
@@ -76,6 +77,13 @@ namespace DFLAT {
         public string message;
 
         public ExpressionType type() => ExpressionType.Error;
+    }
+
+    // not an expression, used for operator parsing
+    class OperatorExpression : Expression {
+        public Token operatorToken;
+
+        public ExpressionType type() => ExpressionType.Operator;
     }
 
     class IfExpression : Expression {
@@ -223,6 +231,9 @@ namespace DFLAT {
         Class,
         Fn,
         Let,
+        Return,
+        Break,
+        Continue,
     }
 
     interface Statement {
@@ -268,5 +279,23 @@ namespace DFLAT {
         public Parameter subject;
 
         public StatementType type() => StatementType.Let;
+    }
+
+    class ReturnStatement : Statement {
+        public Expression value;
+
+        public StatementType type() => StatementType.Return;
+    }
+
+    class BreakStatement : Statement {
+        public Expression value;
+
+        public StatementType type() => StatementType.Break;
+    }
+
+    class ContinueStatement : Statement {
+        public Expression value;
+
+        public StatementType type() => StatementType.Continue;
     }
 }
