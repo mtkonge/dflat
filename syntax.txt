@@ -1,0 +1,30 @@
+class MyClass {
+    public property1;
+    property2; // private by default
+
+    constructor(property1, property2) {
+        self.property1 = propery1;
+        self.property2 = propery2;
+    }
+
+    fn myMethod(self) {
+        self.property1++;
+        self.property2--;
+    }
+}
+
+myClass1 = MyClass()
+
+myClass1.myMethod()
+
+fn function(param) {
+    param += 69;
+    return param;
+}
+let mut myVar1 = 0;
+
+let mut myVar2 = function(params);
+
+
+
+
