@@ -3,10 +3,9 @@ class MyClass {
     property_2 // private by default
 
     new(property_1, property_2) {
-        self.property_1 = propery_1
-        self.property_2 = propery_2
+        self.property_1 = property_1
+        self.property_2 = property_2
     }
-
     fn my_method1(self) {
         self.property_1++
         self.property_2--
