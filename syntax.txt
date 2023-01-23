@@ -1,44 +1,44 @@
 class MyClass {
-    pub property_1;
-    property_2; // private by default
+    pub property_1
+    property_2 // private by default
 
     new(property_1, property_2) {
-        self.property_1 = propery_1;
-        self.property_2 = propery_2;
+        self.property_1 = propery_1
+        self.property_2 = propery_2
     }
 
     fn my_method1(self) {
-        self.property_1++;
-        self.property_2--;
+        self.property_1++
+        self.property_2--
     }
 }
 
 class MyInheritedClass extends MyClass {
-    property_3: string;
+    property_3: string
     new(property_3: string) {
-        super();
-        self.property_3: string;
+        super()
+        self.property_3: string
     }
 
     fn my_method2(self) {
-        self.property_1 = 0;
-        self.property_2 = 0;
-        self.property_3 = "Lorem ipsum dolor sit amet";
+        self.property_1 = 0
+        self.property_2 = 0
+        self.property_3 = "Lorem ipsum dolor sit amet"
     }
 }
 
-my_class_1 = MyClass();
-my_class_1.my_method1();
+my_class_1 = MyClass()
+my_class_1.my_method1()
 
-my_inherited_class = MyInheritedClass(42);
-my_inherited_class.my_method1(5);
-my_inherited_class.my_method2();
+my_inherited_class = MyInheritedClass(42)
+my_inherited_class.my_method1(5)
+my_inherited_class.my_method2()
 
 fn function(param) {
-    param += 69;
-    return param;
+    param += 69
+    return param
 }
 
-let mut my_var_1 = 0;
-let mut my_array = ["bing", "chilling"];
-let mut my_var_2 = function(params);
+let mut my_var_1 = 0
+let mut my_array = ["bing", "chilling"]
+let mut my_var_2 = function(params)
