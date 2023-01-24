@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DFLAT {
 
     enum TypeType {
@@ -12,7 +8,7 @@ namespace DFLAT {
     interface Type {
         TypeType type();
     }
-    
+
     class ErrorType : Type {
         public int line, column;
         public string message;
@@ -117,7 +113,7 @@ namespace DFLAT {
         public Statement[] statements;
         public Expression result;
 
-        public ExpressionType type() => ExpressionType.Blcok;
+        public ExpressionType type() => ExpressionType.Block;
     }
 
     enum AssignType {
@@ -194,7 +190,7 @@ namespace DFLAT {
 
         public ExpressionType type() => ExpressionType.Index;
     }
-    
+
     class IdExpression : Expression {
         public string value;
 

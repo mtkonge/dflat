@@ -2,7 +2,17 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
+    <StartupObject>DFLAT.Program</StartupObject>
+    <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EditorConfigFiles Remove="Z:\dflat\dflat\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Z:\dflat\dflat\.editorconfig" />
+  </ItemGroup>
 
 </Project>

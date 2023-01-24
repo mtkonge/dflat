@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DFLAT {
     enum TokenType {
@@ -69,8 +67,8 @@ namespace DFLAT {
 
     struct Token {
         public readonly TokenType type;
-        String value;
-        int column, line;
+        public String value;
+        public int column, line;
 
         public Token(TokenType type, String value, int column, int line) {
             this.type = type;
