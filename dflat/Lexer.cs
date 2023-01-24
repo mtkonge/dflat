@@ -3,14 +3,13 @@
 namespace DFLAT;
 
 class Lexer {
-    private const string digits = "1234567890";
     private const string idChars = "abcdefghijklmnopqrstuvwxyzæøåABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ_";
-    private string text;
+    private readonly string text;
     private int index;
     private int column;
     private int line;
 
-    private Queue<Token> tokens = new Queue<Token> { };
+    private readonly Queue<Token> tokens = new() { };
 
     private bool done() => index >= this.text.Length;
 
@@ -20,17 +19,18 @@ class Lexer {
             if (this.text[index - 1] == '\n') {
                 line++;
                 column = 1;
-            } else {
+            }
+            else {
                 column++;
             }
         }
     }
 
     private Token makeNumber() {
-        string value = this.text[index].ToString();
+        var value = this.text[index].ToString();
         step();
-        int dots = 0;
-        while (!done() && (char.IsDigit(this.text[index])) || text[index] == '.') {
+        var dots = 0;
+        while ((!done() && char.IsDigit(this.text[index])) || text[index] == '.') {
             if (this.text[index] == '.' && dots < 1) {
                 if (dots >= 1)
                     break;
@@ -88,9 +88,9 @@ class Lexer {
     }
 
     private Token makeNameOrKeyword() {
-        string value = this.text[index].ToString();
+        var value = this.text[index].ToString();
         step();
-        while (!done() && (idChars.Contains(this.text[index]))) {
+        while (!done() && idChars.Contains(this.text[index])) {
             value += this.text[index];
             step();
         }
@@ -105,7 +105,7 @@ class Lexer {
     }
 
     private Token makeChar() {
-        string value = text[index].ToString();
+        var value = text[index].ToString();
         step();
         if (done())
             return new Token(TokenType.Error, "unexpected end of char literal", column, line);
@@ -127,9 +127,9 @@ class Lexer {
     }
 
     private Token makeString() {
-        string value = text[index].ToString();
+        var value = text[index].ToString();
         step();
-        bool escaped = false;
+        var escaped = false;
         while (!done() && !(!escaped && text[index] == '\"')) {
             if (escaped)
                 escaped = false;
@@ -147,13 +147,16 @@ class Lexer {
 
     private Token makeSingleOrDouble(
         TokenType caseSingle, TokenType caseDouble, char second) {
-        string value = text[index].ToString();
+        var value = text[index].ToString();
         step();
         if (!done() && text[index] == second) {
             var t = new Token(caseDouble, value + text[index], column, index);
             step();
             return t;
-        } else {
+        }
+
+
+        else {
             return new Token(caseSingle, value, column, index);
         }
     }
@@ -168,7 +171,8 @@ class Lexer {
             var t = new Token(caseDoubleB, value + text[index], column, line);
             step();
             return t;
-        } else {
+        }
+        else {
             return singleOrDoubleA;
         }
     }
@@ -181,11 +185,14 @@ class Lexer {
         while (index < this.text.Length) {
             if (char.IsDigit(this.text[index])) {
                 tokens.Enqueue(makeNumber());
-            } else if (idChars.Contains(this.text[index])) {
+            }
+            else if (idChars.Contains(this.text[index])) {
                 tokens.Enqueue(makeNameOrKeyword());
-            } else if (this.text[index] == ' ') {
+            }
+            else if (this.text[index] == ' ') {
                 step();
-            } else {
+            }
+            else {
                 switch (this.text[index]) {
                     case '\'':
                         tokens.Enqueue(makeChar());
@@ -194,20 +201,21 @@ class Lexer {
                         tokens.Enqueue(makeString());
                         break;
                     case '+':
-                        tokens.Enqueue(singleChar(TokenType.Plus));
+                        tokens.Enqueue(makeSingleOrDouble(
+                            TokenType.Plus, TokenType.PlusEqual, '='));
                         break;
                     case '-':
-                        tokens.Enqueue(makeSingleOrTwoDouble(TokenType.Plus, TokenType.MinusEqual, '=', TokenType.ThinArrow, '>'));
+                        tokens.Enqueue(makeSingleOrTwoDouble(TokenType.Minus, TokenType.MinusEqual, '=', TokenType.ThinArrow, '>'));
                         break;
                     case '*':
-                        tokens.Enqueue(makeSingleOrDouble(
-                            TokenType.Asterisk, TokenType.Exponentation, '*'));
+                        tokens.Enqueue(makeSingleOrTwoDouble(TokenType.Asterisk, TokenType.AsteriskEqual, '=', TokenType.Exponentation, '*'));
                         break;
                     case '/':
                         pushSlashOrComment();
                         break;
                     case '%':
-                        tokens.Enqueue(singleChar(TokenType.Percent));
+                        tokens.Enqueue(makeSingleOrDouble(
+                            TokenType.Percent, TokenType.PercentEqual, '='));
                         break;
                     case '!':
                         tokens.Enqueue(makeSingleOrDouble(
@@ -259,7 +267,7 @@ class Lexer {
                         tokens.Enqueue(singleChar(TokenType.Dot));
                         break;
                     default:
-                        string errorMsg = "unexpected char '" + text[index] + "'";
+                        var errorMsg = "unexpected char '" + text[index] + "'";
                         tokens.Enqueue(new Token(TokenType.Error, errorMsg, column, line));
                         break;
                 }
@@ -275,7 +283,8 @@ class Lexer {
         if (!done() && text[index] == '/') {
             while (!done() && text[index] != '\n')
                 step();
-        } else if (!done() && text[index] == '*') {
+        }
+        else if (!done() && text[index] == '*') {
             step();
             if (done())
                 tokens.Enqueue(new Token(TokenType.Error, "unexpected end of multiline comment", column, line));
@@ -289,7 +298,12 @@ class Lexer {
                 tokens.Enqueue(new Token(TokenType.Error, "unexpected end of multiline comment", column, line));
             }
             step();
-        } else {
+        }
+        else if (!done() && text[index] == '=') {
+            tokens.Enqueue(new Token(TokenType.SlashEqual, value, currentColumn, currentLine));
+            step();
+        }
+        else {
             tokens.Enqueue(new Token(TokenType.Slash, value, currentColumn, currentLine));
         }
     }
@@ -299,7 +313,7 @@ class Lexer {
         this.index = 0;
         this.column = 1;
         this.line = 1;
-        this.tokenize();
+        tokenize();
     }
 
     public Token next() => this.tokens.Dequeue();
