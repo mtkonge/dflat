@@ -290,11 +290,18 @@ class Lexer {
                 tokens.Enqueue(new Token(TokenType.Error, "unexpected end of multiline comment", column, line));
             var last = text[index];
             step();
-            while (!done() && !(last == '*' && text[index] == '/')) {
+            var nesting = 0;
+            while (!done() && !(last == '*' && text[index] == '/' && nesting != 0)) {
+                if (last == '/' && text[index] == '*') {
+                    nesting++;
+                }
+                else if (last == '*' && text[index] == '/') {
+                    nesting--;
+                }
                 last = text[index];
                 step();
             }
-            if (done() || last != '*' || text[index] != '/') {
+            if (done() || last != '*' || text[index] != '/' || nesting != 0) {
                 tokens.Enqueue(new Token(TokenType.Error, "unexpected end of multiline comment", column, line));
             }
             step();
