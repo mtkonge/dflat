@@ -5,6 +5,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <StartupObject>DFLAT.Program</StartupObject>
     <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
