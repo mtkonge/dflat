@@ -303,6 +303,6 @@ class Lexer {
     }
 
     public Token next() => this.tokens.Dequeue();
-    public Token current() => this.tokens.Peek();
+    public Token peek() => this.tokens.Peek();
 
 }
