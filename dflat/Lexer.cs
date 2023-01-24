@@ -19,8 +19,7 @@ class Lexer {
             if (this.text[index - 1] == '\n') {
                 line++;
                 column = 1;
-            }
-            else {
+            } else {
                 column++;
             }
         }
@@ -153,10 +152,7 @@ class Lexer {
             var t = new Token(caseDouble, value + text[index], column, index);
             step();
             return t;
-        }
-
-
-        else {
+        } else {
             return new Token(caseSingle, value, column, index);
         }
     }
@@ -171,8 +167,7 @@ class Lexer {
             var t = new Token(caseDoubleB, value + text[index], column, line);
             step();
             return t;
-        }
-        else {
+        } else {
             return singleOrDoubleA;
         }
     }
@@ -185,14 +180,11 @@ class Lexer {
         while (index < this.text.Length) {
             if (char.IsDigit(this.text[index])) {
                 tokens.Enqueue(makeNumber());
-            }
-            else if (idChars.Contains(this.text[index])) {
+            } else if (idChars.Contains(this.text[index])) {
                 tokens.Enqueue(makeNameOrKeyword());
-            }
-            else if (this.text[index] == ' ') {
+            } else if (this.text[index] == ' ') {
                 step();
-            }
-            else {
+            } else {
                 switch (this.text[index]) {
                     case '\'':
                         tokens.Enqueue(makeChar());
@@ -283,8 +275,7 @@ class Lexer {
         if (!done() && text[index] == '/') {
             while (!done() && text[index] != '\n')
                 step();
-        }
-        else if (!done() && text[index] == '*') {
+        } else if (!done() && text[index] == '*') {
             step();
             if (done())
                 tokens.Enqueue(new Token(TokenType.Error, "unexpected end of multiline comment", column, line));
@@ -294,8 +285,7 @@ class Lexer {
             while (!done() && !(last == '*' && text[index] == '/' && nesting != 0)) {
                 if (last == '/' && text[index] == '*') {
                     nesting++;
-                }
-                else if (last == '*' && text[index] == '/') {
+                } else if (last == '*' && text[index] == '/') {
                     nesting--;
                 }
                 last = text[index];
@@ -305,12 +295,10 @@ class Lexer {
                 tokens.Enqueue(new Token(TokenType.Error, "unexpected end of multiline comment", column, line));
             }
             step();
-        }
-        else if (!done() && text[index] == '=') {
+        } else if (!done() && text[index] == '=') {
             tokens.Enqueue(new Token(TokenType.SlashEqual, value, currentColumn, currentLine));
             step();
-        }
-        else {
+        } else {
             tokens.Enqueue(new Token(TokenType.Slash, value, currentColumn, currentLine));
         }
     }
