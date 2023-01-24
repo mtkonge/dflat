@@ -46,7 +46,6 @@ class IdPattern : Pattern {
 
 enum ExpressionType {
     Error,
-    Operator, // not an expression, used for operator parsing
     If,
     While,
     For,
@@ -75,17 +74,6 @@ class ErrorExpression : Expression {
     public string message;
 
     public ExpressionType type() => ExpressionType.Error;
-}
-
-// not really an expression
-// but it's used for operator parsing
-class OperatorExpression : Expression {
-    // TODO
-    // this is the only dependency on Token
-    // divergence of this dependency would be nice
-    public Token operatorToken;
-
-    public ExpressionType type() => ExpressionType.Operator;
 }
 
 class IfExpression : Expression {
@@ -135,6 +123,7 @@ class AssignExpression : Expression {
 }
 
 enum BinaryType {
+    Exponentation,
     Add,
     Subtract,
     Multiply,
@@ -180,7 +169,7 @@ class CallExpression : Expression {
 
 class MemberExpression : Expression {
     public Expression subject;
-    public Expression value;
+    public string value;
 
     public ExpressionType type() => ExpressionType.Member;
 }
