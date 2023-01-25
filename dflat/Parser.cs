@@ -276,9 +276,12 @@ class Parser {
         };
     }
 
-    private Dictionary<char, char> charToEscapeCharMap = new(){
+    private readonly Dictionary<char, char> charToEscapeCharMap = new(){
         {'n', '\n'},
         {'r', '\r'},
+        {'t', '\t'},
+        {'f', '\f'},
+        {'v', '\v'},
     };
 
     private char parseCharValue(string message) {
@@ -286,9 +289,8 @@ class Parser {
         var c = withoutQuotes[0];
         if (c == '\\') {
             c = withoutQuotes[1];
-            try {
+            if (this.charToEscapeCharMap.ContainsKey(c))
                 c = charToEscapeCharMap[c];
-            } catch {};
         }
         return c;
     }
@@ -301,9 +303,8 @@ class Parser {
             if (c == '\\') {
                 i++;
                 c = withoutQuotes[i];
-                try {
+                if (this.charToEscapeCharMap.ContainsKey(c))
                     c = charToEscapeCharMap[c];
-                } catch {};
             }
             result.Append(c);
         }

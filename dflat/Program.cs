@@ -41,6 +41,8 @@ internal class Program {
         test("abc[1][1]");
         test("abc.abc.abc");
         test("abc(123)(123)(abc)");
+        
+        test("\"\'\n");
 
         Console.WriteLine("!dlroW olleH");
     }
