@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace DFLAT;
 
 enum TypeType {
@@ -74,6 +76,7 @@ class ErrorExpression : Expression {
     public string message;
 
     public ExpressionType type() => ExpressionType.Error;
+    public override string ToString() => $"error: {message} at {line}:{column}";
 }
 
 class IfExpression : Expression {
@@ -120,6 +123,16 @@ class AssignExpression : Expression {
     public AssignType assignType;
 
     public ExpressionType type() => ExpressionType.Assign;
+    public override string ToString() => $"({subject} {assignTypeToString()} {value})";
+
+    private string assignTypeToString() => assignType switch {
+        AssignType.Assign => "=",
+        AssignType.Add => "+=",
+        AssignType.Subtract => "-=",
+        AssignType.Multiply => "*=",
+        AssignType.Divide => "/=",
+        AssignType.Modulus => "%=",
+    };
 }
 
 enum BinaryType {
@@ -146,6 +159,25 @@ class BinaryExpression : Expression {
     public BinaryType binaryType;
 
     public ExpressionType type() => ExpressionType.Binary;
+    public override string ToString() => $"({left} {binaryTypeToString()} {right})";
+
+    private string binaryTypeToString() => binaryType switch {
+        BinaryType.Exponentation => "**",
+        BinaryType.Add => "+",
+        BinaryType.Subtract => "-",
+        BinaryType.Multiply => "*",
+        BinaryType.Divide => "/",
+        BinaryType.Modulus => "%",
+        BinaryType.Lt => "<",
+        BinaryType.LtEqual => "<=",
+        BinaryType.Gt => ">",
+        BinaryType.GtEqual => ">=",
+        BinaryType.In => "in",
+        BinaryType.Equal => "==",
+        BinaryType.NotEqual => "!=",
+        BinaryType.And => "and",
+        BinaryType.Or => "or",
+    };
 }
 
 enum UnaryType {
@@ -158,6 +190,12 @@ class UnaryExpression : Expression {
     public UnaryType unaryType;
 
     public ExpressionType type() => ExpressionType.Unary;
+    public override string ToString() => $"({unaryTypeToString()} {subject})";
+
+    private string unaryTypeToString() => unaryType switch {
+        UnaryType.Not => "not",
+        UnaryType.Negate => "-",
+    };
 }
 
 class CallExpression : Expression {
@@ -165,6 +203,7 @@ class CallExpression : Expression {
     public Expression[] arguments;
 
     public ExpressionType type() => ExpressionType.Call;
+    public override string ToString() => $"{subject}({string.Join(", ", arguments.Select((a) => a.ToString()))})";
 }
 
 class MemberExpression : Expression {
@@ -172,6 +211,7 @@ class MemberExpression : Expression {
     public string value;
 
     public ExpressionType type() => ExpressionType.Member;
+    public override string ToString() => $"{subject}.{value}";
 }
 
 class IndexExpression : Expression {
@@ -179,46 +219,54 @@ class IndexExpression : Expression {
     public Expression value;
 
     public ExpressionType type() => ExpressionType.Index;
+    public override string ToString() => $"{subject}[{value}]";
 }
 
 class IdExpression : Expression {
     public string value;
 
     public ExpressionType type() => ExpressionType.Id;
+    public override string ToString() => value.ToString();
 }
 
 class IntExpression : Expression {
     public long value;
 
     public ExpressionType type() => ExpressionType.Int;
+    public override string ToString() => value.ToString();
 }
 
 class FloatExpression : Expression {
     public double value;
 
     public ExpressionType type() => ExpressionType.Float;
+    public override string ToString() => value.ToString();
 }
 
 class CharExpression : Expression {
     public char value;
 
     public ExpressionType type() => ExpressionType.Char;
+    public override string ToString() => value.ToString();
 }
 
 class StringExpression : Expression {
     public string value;
 
     public ExpressionType type() => ExpressionType.String;
+    public override string ToString() => value.ToString();
 }
 
 class BoolExpression : Expression {
     public bool value;
 
     public ExpressionType type() => ExpressionType.Bool;
+    public override string ToString() => value.ToString();
 }
 
 class NullExpression : Expression {
     public ExpressionType type() => ExpressionType.Null;
+    public override string ToString() => "null";
 }
 
 class Parameter {

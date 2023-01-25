@@ -2,7 +2,7 @@
 
 namespace DFLAT;
 
-class Lexer {
+class Lexer : TokenIterator {
     private const string idChars = "abcdefghijklmnopqrstuvwxyzæøåABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ_";
     private readonly string text;
     private int index;
@@ -29,7 +29,7 @@ class Lexer {
         var value = this.text[index].ToString();
         step();
         var dots = 0;
-        while ((!done() && char.IsDigit(this.text[index])) || text[index] == '.') {
+        while (!done() && (char.IsDigit(this.text[index]) || text[index] == '.')) {
             if (this.text[index] == '.' && dots < 1) {
                 if (dots >= 1)
                     break;
@@ -312,6 +312,17 @@ class Lexer {
     }
 
     public Token next() => this.tokens.Dequeue();
-    public Token peek() => this.tokens.Peek();
+    public Token peek() {
+        if (this.tokens.Count > 0)
+            return this.tokens.Peek();
+        else
+            return new Token(TokenType.Eof, "", line, column);
+    }
+    public Token[] collect() {
+        var tokens = new List<Token>();
+        while (peek().type != TokenType.Eof)
+            tokens.Add(next());
+        return tokens.ToArray();
+    }
 
 }

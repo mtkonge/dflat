@@ -77,3 +77,9 @@ struct Token {
     }
 }
 
+interface TokenIterator {
+    Token next();
+    Token peek();
+    Token[] collect();
+}
+

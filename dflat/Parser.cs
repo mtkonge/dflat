@@ -4,13 +4,13 @@ using System.Collections.Generic;
 namespace DFLAT;
 
 class Parser {
-    private Lexer lexer;
+    private TokenIterator tokens;
 
-    public Parser(Lexer lexer) {
-        this.lexer = lexer;
+    public Parser(TokenIterator tokens) {
+        this.tokens = tokens;
     }
 
-    public Expression parseExpr() => parseOperations(0, true);
+    public Expression parseExpression(bool allowAssignment = false) => parseOperations(0, allowAssignment);
 
     private Expression parseOperations(int minimumBindingPower = 0, bool allowAssignment = false) {
         var left = ((Func<Expression>) (() => {
@@ -25,14 +25,11 @@ class Parser {
                 return value;
             }
             var prefixOperator = current();
-            var rightBP = prefixBindingPower(prefixOperator.type);
-            if (rightBP != null) {
+            var prefixBP = prefixBindingPower(prefixOperator.type);
+            if (prefixBP != null) {
                 step();
-                var right = parseOperations((int) rightBP);
-                return new UnaryExpression {
-                    subject = right,
-                    unaryType = unaryType(prefixOperator.type),
-                };
+                var right = parseOperations((int) prefixBP);
+                return new UnaryExpression { subject = right, unaryType = unaryType(prefixOperator.type) };
             }
             return parseOperand();
         }))();
@@ -40,9 +37,10 @@ class Parser {
             return left;
         while (true) {
             var op = current();
-            var pLeftBP = postfixBindingPower(op.type);
-            if (pLeftBP != null) {
-                if (pLeftBP < minimumBindingPower)
+
+            var postfixBP = postfixBindingPower(op.type);
+            if (postfixBP != null) {
+                if (postfixBP < minimumBindingPower)
                     break;
                 if (current().type == TokenType.Dot) {
                     step();
@@ -54,7 +52,6 @@ class Parser {
                         subject = left,
                         value = value,
                     };
-                    throw new Exception("not implemented");
                 } else if (current().type == TokenType.LBracket) {
                     step();
                     var right = parseOperations(0);
@@ -69,18 +66,32 @@ class Parser {
                     };
                 } else if (current().type == TokenType.LParen) {
                     step();
-                    throw new Exception("not implemented");
+                    var arguments = new List<Expression>();
+                    if (current().type != TokenType.RParen) {
+                        arguments.Add(parseExpression());
+                        while (current().type == TokenType.Comma) {
+                            step();
+                            if (current().type == TokenType.RParen)
+                                break;
+                            arguments.Add(parseExpression());
+                        }
+                        if (current().type != TokenType.RParen)
+                            return errorExpression("expected ')'");
+                    }
+                    step();
+                    left = new CallExpression { subject = left, arguments = arguments.ToArray() };
                 } else {
                     throw new Exception("panic");
                 }
-            } else {
-                var bindingPower = infixBindingPower(op.type);
-                if (bindingPower == null)
-                    break;
-                step();
+                continue;
+            }
+
+            var bindingPower = infixBindingPower(op.type);
+            if (bindingPower != null) {
                 var (leftBP, rightBP) = ((int, int)) bindingPower;
                 if (leftBP < minimumBindingPower)
                     break;
+                step();
                 var right = parseOperations(rightBP);
                 if (right.type() == ExpressionType.Error)
                     return right;
@@ -88,19 +99,14 @@ class Parser {
                 if (assignType != null) {
                     if (!allowAssignment)
                         return errorExpression("assignment not allowed");
-                    left = new AssignExpression {
-                        subject = left,
-                        value = right,
-                        assignType = (AssignType) assignType,
-                    };
+                    left = new AssignExpression { subject = left, value = right, assignType = (AssignType) assignType };
                 } else {
-                    left = new BinaryExpression {
-                        left = left,
-                        right = right,
-                        binaryType = binaryType(op.type),
-                    };
+                    left = new BinaryExpression { left = left, right = right, binaryType = binaryType(op.type) };
                 }
+                continue;
             }
+
+            break;
         }
         return left;
     }
@@ -140,12 +146,12 @@ class Parser {
             TokenType.Gt => (17, 18),
             TokenType.ExclamationEqual => (15, 16),
 
-            TokenType.Equal => (3, 4),
-            TokenType.PlusEqual => (3, 4),
-            TokenType.MinusEqual => (3, 4),
-            TokenType.AsteriskEqual => (3, 4),
-            TokenType.SlashEqual => (3, 4),
-            TokenType.PercentEqual => (3, 4),
+            TokenType.Equal => (4, 3),
+            TokenType.PlusEqual => (4, 3),
+            TokenType.MinusEqual => (4, 3),
+            TokenType.AsteriskEqual => (4, 3),
+            TokenType.SlashEqual => (4, 3),
+            TokenType.PercentEqual => (4, 3),
             _ => null,
         };
     }
@@ -191,14 +197,8 @@ class Parser {
         };
     }
 
-    private Expression[] parseParameters() {
-        var parameters = new List<Expression>();
-
-        return parameters.ToArray();
-    }
-
     private Expression parseOperand() {
-        return lexer.peek().type switch {
+        return tokens.peek().type switch {
             TokenType.If => parseIf(),
             TokenType.While => parseWhile(),
             TokenType.For => parseFor(),
@@ -262,25 +262,16 @@ class Parser {
 
     private Expression parseNull() => new NullExpression();
 
-    private Token current() => this.lexer.peek();
+    private Token current() => this.tokens.peek();
 
-    private void step() {
-        this.lexer.next();
-    }
+    private void step() { this.tokens.next(); }
 
     private bool currentIs(TokenType type) => current().type == type;
 
-    private bool eat(TokenType type) {
-        var isType = currentIs(type);
-        if (isType)
-            this.lexer.next();
-        return isType;
-    }
-
     private Expression errorExpression(string message) {
         return new ErrorExpression {
-            line = lexer.peek().line,
-            column = lexer.peek().column,
+            line = tokens.peek().line,
+            column = tokens.peek().column,
             message = message,
         };
     }
