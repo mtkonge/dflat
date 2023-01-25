@@ -11,14 +11,14 @@ interface Type {
     TypeType type();
 }
 
-class ErrorType : Type {
+struct ErrorType : Type {
     public int line, column;
     public string message;
 
     public TypeType type() => TypeType.Error;
 }
 
-class IdType : Type {
+struct IdType : Type {
     public string value;
 
     public TypeType type() => TypeType.Id;
@@ -33,14 +33,14 @@ interface Pattern {
     PatternType type();
 }
 
-class ErrorPattern : Pattern {
+struct ErrorPattern : Pattern {
     public int line, column;
     public string message;
 
     public PatternType type() => PatternType.Error;
 }
 
-class IdPattern : Pattern {
+struct IdPattern : Pattern {
     public string value;
 
     public PatternType type() => PatternType.Id;
@@ -71,7 +71,7 @@ interface Expression {
     ExpressionType type();
 }
 
-class ErrorExpression : Expression {
+struct ErrorExpression : Expression {
     public int line, column;
     public string message;
 
@@ -79,21 +79,21 @@ class ErrorExpression : Expression {
     public override string ToString() => $"error: {message} at {line}:{column}";
 }
 
-class IfExpression : Expression {
+struct IfExpression : Expression {
     public Expression condition;
     public Expression body;
 
     public ExpressionType type() => ExpressionType.If;
 }
 
-class WhileExpression : Expression {
+struct WhileExpression : Expression {
     public Expression condition;
     public Expression body;
 
     public ExpressionType type() => ExpressionType.While;
 }
 
-class ForExpression : Expression {
+struct ForExpression : Expression {
     public Parameter subject;
     public Expression value;
     public Expression body;
@@ -101,7 +101,7 @@ class ForExpression : Expression {
     public ExpressionType type() => ExpressionType.For;
 }
 
-class BlockExpression : Expression {
+struct BlockExpression : Expression {
     public Statement[] statements;
     public Expression result;
 
@@ -117,7 +117,7 @@ enum AssignType {
     Modulus,
 }
 
-class AssignExpression : Expression {
+struct AssignExpression : Expression {
     public Expression subject;
     public Expression value;
     public AssignType assignType;
@@ -153,7 +153,7 @@ enum BinaryType {
     Or,
 }
 
-class BinaryExpression : Expression {
+struct BinaryExpression : Expression {
     public Expression left;
     public Expression right;
     public BinaryType binaryType;
@@ -185,7 +185,7 @@ enum UnaryType {
     Negate,
 }
 
-class UnaryExpression : Expression {
+struct UnaryExpression : Expression {
     public Expression subject;
     public UnaryType unaryType;
 
@@ -198,7 +198,7 @@ class UnaryExpression : Expression {
     };
 }
 
-class CallExpression : Expression {
+struct CallExpression : Expression {
     public Expression subject;
     public Expression[] arguments;
 
@@ -206,7 +206,7 @@ class CallExpression : Expression {
     public override string ToString() => $"{subject}({string.Join(", ", arguments.Select((a) => a.ToString()))})";
 }
 
-class MemberExpression : Expression {
+struct MemberExpression : Expression {
     public Expression subject;
     public string value;
 
@@ -214,7 +214,7 @@ class MemberExpression : Expression {
     public override string ToString() => $"{subject}.{value}";
 }
 
-class IndexExpression : Expression {
+struct IndexExpression : Expression {
     public Expression subject;
     public Expression value;
 
@@ -222,54 +222,54 @@ class IndexExpression : Expression {
     public override string ToString() => $"{subject}[{value}]";
 }
 
-class IdExpression : Expression {
+struct IdExpression : Expression {
     public string value;
 
     public ExpressionType type() => ExpressionType.Id;
     public override string ToString() => value.ToString();
 }
 
-class IntExpression : Expression {
+struct IntExpression : Expression {
     public long value;
 
     public ExpressionType type() => ExpressionType.Int;
     public override string ToString() => value.ToString();
 }
 
-class FloatExpression : Expression {
+struct FloatExpression : Expression {
     public double value;
 
     public ExpressionType type() => ExpressionType.Float;
     public override string ToString() => value.ToString();
 }
 
-class CharExpression : Expression {
+struct CharExpression : Expression {
     public char value;
 
     public ExpressionType type() => ExpressionType.Char;
     public override string ToString() => value.ToString();
 }
 
-class StringExpression : Expression {
+struct StringExpression : Expression {
     public string value;
 
     public ExpressionType type() => ExpressionType.String;
     public override string ToString() => value.ToString();
 }
 
-class BoolExpression : Expression {
+struct BoolExpression : Expression {
     public bool value;
 
     public ExpressionType type() => ExpressionType.Bool;
     public override string ToString() => value.ToString();
 }
 
-class NullExpression : Expression {
+struct NullExpression : Expression {
     public ExpressionType type() => ExpressionType.Null;
     public override string ToString() => "null";
 }
 
-class Parameter {
+struct Parameter {
     public Pattern subject;
     public Type? type;
     public Expression? value;
@@ -289,25 +289,25 @@ interface Statement {
     StatementType type();
 }
 
-class ErrorStatement : Statement {
+struct ErrorStatement : Statement {
     public int line, column;
     public string message;
 
     public StatementType type() => StatementType.Error;
 }
 
-class Field {
+struct Field {
     public Parameter subject;
 }
 
-class Method {
+struct Method {
     public string subject;
     public Parameter[] parameters;
     public Type returnType;
     public Expression body;
 }
 
-class ClassStatement : Statement {
+struct ClassStatement : Statement {
     public string subject;
     public Field[] fields;
     public Method[] methods;
@@ -315,7 +315,7 @@ class ClassStatement : Statement {
     public StatementType type() => StatementType.Class;
 }
 
-class FnStatement : Statement {
+struct FnStatement : Statement {
     public string subject;
     public Parameter[] parameters;
     public Type returnType;
@@ -324,25 +324,25 @@ class FnStatement : Statement {
     public StatementType type() => StatementType.Fn;
 }
 
-class LetStatement : Statement {
+struct LetStatement : Statement {
     public Parameter subject;
 
     public StatementType type() => StatementType.Let;
 }
 
-class ReturnStatement : Statement {
+struct ReturnStatement : Statement {
     public Expression value;
 
     public StatementType type() => StatementType.Return;
 }
 
-class BreakStatement : Statement {
+struct BreakStatement : Statement {
     public Expression value;
 
     public StatementType type() => StatementType.Break;
 }
 
-class ContinueStatement : Statement {
+struct ContinueStatement : Statement {
     public Expression value;
 
     public StatementType type() => StatementType.Continue;
