@@ -7,7 +7,7 @@ internal class Program {
     static void test(string text) {
         Console.WriteLine($"===\ntext = \"{text}\"");
         var tokens = new Lexer(text).collect();
-        Console.WriteLine($"tokens = [{string.Join(", ", tokens.Select((token) => token.type.ToString()))}]");
+        Console.WriteLine($"tokens = [{string.Join(", ", tokens.Select((token) => token.type.ToString() + "(" + token.value + ")"))}]");
         var parser = new Parser(new Lexer(text));
         var ast = parser.parseExpression(true);
         Console.WriteLine($"ast = {ast}\n");
