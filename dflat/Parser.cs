@@ -247,13 +247,13 @@ class Parser {
 
     private Expression parseChar() {
         // TODO escape chars
-        return new CharExpression { value = current().value[1] };
+        return new CharExpression { value =  parseCharValue(current().value) };
     }
 
     private Expression parseString() {
         // TODO escape chars
         var value = current().value;
-        return new StringExpression { value = value.Substring(1, value.Length - 2) };
+        return new StringExpression { value = parseStringValue(value) };
     }
 
     private Expression parseBool() {
@@ -285,7 +285,10 @@ class Parser {
         var withoutQuotes = message.Substring(1, message.Length - 2);
         var c = withoutQuotes[0];
         if (c == '\\') {
-            c = charToEscapeCharMap[withoutQuotes[1]];
+            c = withoutQuotes[1];
+            try {
+                c = charToEscapeCharMap[c];
+            } catch {};
         }
         return c;
     }
@@ -297,7 +300,10 @@ class Parser {
             char c = withoutQuotes[i];
             if (c == '\\') {
                 i++;
-                c = charToEscapeCharMap[withoutQuotes[i]];
+                c = withoutQuotes[i];
+                try {
+                    c = charToEscapeCharMap[c];
+                } catch {};
             }
             result.Append(c);
         }
