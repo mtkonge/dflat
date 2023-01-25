@@ -109,12 +109,10 @@ class Lexer : TokenIterator {
         if (done())
             return new Token(TokenType.Error, "unexpected end of char literal", column, line);
         if (text[index] == '\\') {
+            value += text[index];
             step();
             if (done())
                 return new Token(TokenType.Error, "unexpected end of char literal", column, line);
-            // for control characters such as \n, it should include \
-            if (text[index] != '\'')
-                value += '\\';
         }
         value += text[index];
         step();
