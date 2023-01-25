@@ -275,4 +275,32 @@ class Parser {
             message = message,
         };
     }
+
+    private Dictionary<char, char> charToEscapeCharMap = new(){
+        {'n', '\n'},
+        {'r', '\r'},
+    };
+
+    private char parseCharValue(string message) {
+        var withoutQuotes = message.Substring(1, message.Length - 2);
+        var c = withoutQuotes[0];
+        if (c == '\\') {
+            c = charToEscapeCharMap[withoutQuotes[1]];
+        }
+        return c;
+    }
+
+    private string parseStringValue(string message) {
+        var withoutQuotes = message.Substring(1, message.Length - 2);
+        var result = new System.Text.StringBuilder();
+        for (int i = 0; i < withoutQuotes.Length; i++) {
+            char c = withoutQuotes[i];
+            if (c == '\\') {
+                i++;
+                c = charToEscapeCharMap[withoutQuotes[i]];
+            }
+            result.Append(c);
+        }
+        return result.ToString();
+    }
 }
