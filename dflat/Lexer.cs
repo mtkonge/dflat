@@ -89,7 +89,7 @@ class Lexer : TokenIterator {
     private Token makeNameOrKeyword() {
         var value = this.text[index].ToString();
         step();
-        while (!done() && idChars.Contains(this.text[index])) {
+        while (!done() && (idChars.Contains(this.text[index]) || char.IsDigit(this.text[index]))) {
             value += this.text[index];
             step();
         }
@@ -108,13 +108,15 @@ class Lexer : TokenIterator {
         step();
         if (done())
             return new Token(TokenType.Error, "unexpected end of char literal", column, line);
-        value += text[index];
         if (text[index] == '\\') {
             step();
             if (done())
                 return new Token(TokenType.Error, "unexpected end of char literal", column, line);
-            value += text[index];
+            // for control characters such as \n, it should include \
+            if (text[index] != '\'')
+                value += '\\';
         }
+        value += text[index];
         step();
         if (done())
             return new Token(TokenType.Error, "unexpected end of char literal", column, line);
@@ -178,10 +180,10 @@ class Lexer : TokenIterator {
             return;
         }
         while (index < this.text.Length) {
-            if (char.IsDigit(this.text[index])) {
-                tokens.Enqueue(makeNumber());
-            } else if (idChars.Contains(this.text[index])) {
+            if (idChars.Contains(this.text[index])) {
                 tokens.Enqueue(makeNameOrKeyword());
+            } else if (char.IsDigit(this.text[index])) {
+                tokens.Enqueue(makeNumber());
             } else if (this.text[index] == ' ') {
                 step();
             } else {
