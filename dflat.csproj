@@ -6,6 +6,7 @@
     <StartupObject>DFLAT.Program</StartupObject>
     <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
     <Nullable>enable</Nullable>
+    <NoWarn>CS8524</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
