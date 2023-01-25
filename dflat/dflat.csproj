@@ -9,11 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EditorConfigFiles Remove="Z:\dflat\dflat\.editorconfig" />
+    <EditorConfigFiles Remove=".\.editorconfig" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Z:\dflat\dflat\.editorconfig" />
+    <None Include=".\.editorconfig" />
   </ItemGroup>
 
 </Project>
