@@ -247,7 +247,7 @@ class Parser {
 
     private Expression parseChar() {
         // TODO escape chars
-        return new CharExpression { value =  parseCharValue(current().value) };
+        return new CharExpression { value = parseCharValue(current().value) };
     }
 
     private Expression parseString() {
