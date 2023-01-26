@@ -1,6 +1,14 @@
+using System;
 using System.Linq;
 
 namespace DFLAT;
+
+struct Error {
+    public int line, column;
+    public string message;
+
+    public override string ToString() => $"error: {message} at {line}:{column}";
+}
 
 enum TypeType {
     Error,
@@ -12,8 +20,7 @@ interface Type {
 }
 
 struct ErrorType : Type {
-    public int line, column;
-    public string message;
+    public Error error;
 
     public TypeType type() => TypeType.Error;
 }
@@ -34,8 +41,7 @@ interface Pattern {
 }
 
 struct ErrorPattern : Pattern {
-    public int line, column;
-    public string message;
+    public Error error;
 
     public PatternType type() => PatternType.Error;
 }
@@ -44,11 +50,13 @@ struct IdPattern : Pattern {
     public string value;
 
     public PatternType type() => PatternType.Id;
+    public override string ToString() => value;
 }
 
 enum ExpressionType {
     Error,
     If,
+    IfElse,
     While,
     For,
     Block,
@@ -72,11 +80,10 @@ interface Expression {
 }
 
 struct ErrorExpression : Expression {
-    public int line, column;
-    public string message;
+    public Error error;
 
     public ExpressionType type() => ExpressionType.Error;
-    public override string ToString() => $"error: {message} at {line}:{column}";
+    public override string ToString() => error.ToString();
 }
 
 struct IfExpression : Expression {
@@ -84,6 +91,16 @@ struct IfExpression : Expression {
     public Expression body;
 
     public ExpressionType type() => ExpressionType.If;
+    public override string ToString() => $"if {condition} {body}";
+}
+
+struct IfElseExpression : Expression {
+    public Expression condition;
+    public Expression truthy;
+    public Expression falsy;
+
+    public ExpressionType type() => ExpressionType.IfElse;
+    public override string ToString() => $"if {condition} {truthy} else {falsy}";
 }
 
 struct WhileExpression : Expression {
@@ -91,21 +108,31 @@ struct WhileExpression : Expression {
     public Expression body;
 
     public ExpressionType type() => ExpressionType.While;
+    public override string ToString() => $"while {condition} {body}";
 }
 
 struct ForExpression : Expression {
-    public Parameter subject;
+    public Pattern subject;
     public Expression value;
     public Expression body;
 
     public ExpressionType type() => ExpressionType.For;
+    public override string ToString() => $"for {subject} in {value} {body}";
 }
 
 struct BlockExpression : Expression {
     public Statement[] statements;
-    public Expression result;
+    public Expression? result;
 
     public ExpressionType type() => ExpressionType.Block;
+    public override string ToString() {
+        var stringified = "{ ";
+        stringified += string.Join("", statements.Select((s) => s.ToString() + "; "));
+        if (result != null)
+            stringified += $"{result} ";
+        stringified += "}";
+        return stringified;
+    }
 }
 
 enum AssignType {
@@ -254,14 +281,14 @@ struct StringExpression : Expression {
     public string value;
 
     public ExpressionType type() => ExpressionType.String;
-    public override string ToString() => value.ToString();
+    public override string ToString() => $"\"{value.ToString()}\"";
 }
 
 struct BoolExpression : Expression {
     public bool value;
 
     public ExpressionType type() => ExpressionType.Bool;
-    public override string ToString() => value.ToString();
+    public override string ToString() => value.ToString().ToLower();
 }
 
 struct NullExpression : Expression {
@@ -273,10 +300,36 @@ struct Parameter {
     public Pattern subject;
     public Type? type;
     public Expression? value;
+
+    public override string ToString() {
+        string stringified = $"{subject}";
+        if (type != null)
+            stringified += $": {type}";
+        if (value != null)
+            stringified += $" = {value}";
+        return stringified;
+    }
+
+    public bool isError() =>
+        subject.type() == PatternType.Error
+        || type?.type() == TypeType.Error
+        || value?.type() == ExpressionType.Error;
+
+    public Error error() {
+        if (subject.type() == PatternType.Error)
+            return ((ErrorPattern) subject).error;
+        else if (type?.type() == TypeType.Error)
+            return ((ErrorType) type).error;
+        else if (value?.type() == ExpressionType.Error)
+            return ((ErrorExpression) value).error;
+        else
+            throw new Exception("panic");
+    }
 }
 
 enum StatementType {
     Error,
+    Expression,
     Class,
     Fn,
     Let,
@@ -290,10 +343,16 @@ interface Statement {
 }
 
 struct ErrorStatement : Statement {
-    public int line, column;
-    public string message;
+    public Error error;
 
     public StatementType type() => StatementType.Error;
+}
+
+struct ExpressionStatement : Statement {
+    public Expression value;
+
+    public StatementType type() => StatementType.Expression;
+    public override string ToString() => value?.ToString() ?? throw new Exception("panic");
 }
 
 struct Field {
@@ -328,22 +387,23 @@ struct LetStatement : Statement {
     public Parameter subject;
 
     public StatementType type() => StatementType.Let;
+    public override string ToString() => $"let {subject}";
 }
 
 struct ReturnStatement : Statement {
-    public Expression value;
+    public Expression? value;
 
     public StatementType type() => StatementType.Return;
 }
 
 struct BreakStatement : Statement {
-    public Expression value;
+    public Expression? value;
 
     public StatementType type() => StatementType.Break;
 }
 
 struct ContinueStatement : Statement {
-    public Expression value;
+    public Expression? value;
 
     public StatementType type() => StatementType.Continue;
 }

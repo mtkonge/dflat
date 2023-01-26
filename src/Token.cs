@@ -75,6 +75,8 @@ struct Token {
         this.column = column;
         this.line = line;
     }
+
+    public override string ToString() => $"Token({type}, {value}, {column}:{line})";
 }
 
 interface TokenIterator {

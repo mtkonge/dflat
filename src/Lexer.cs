@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace DFLAT;
 
@@ -182,7 +183,7 @@ class Lexer : TokenIterator {
                 tokens.Enqueue(makeNameOrKeyword());
             } else if (char.IsDigit(this.text[index])) {
                 tokens.Enqueue(makeNumber());
-            } else if (this.text[index] == ' ') {
+            } else if (this.text[index] == ' ' || this.text[index] == '\n' || this.text[index] == '\r' || this.text[index] == '\t') {
                 step();
             } else {
                 switch (this.text[index]) {

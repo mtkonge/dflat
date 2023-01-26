@@ -10,7 +10,23 @@ class Parser {
         this.tokens = tokens;
     }
 
-    public Expression parseExpression(bool allowAssignment = false) => parseOperations(0, allowAssignment);
+    // public Statement parseStatement() {
+    //     return current().type switch {
+    //         _ => parseExpressionStatement(),
+    //     };
+    // }
+
+    // public Statement parseExpressionStatement() {
+    //     var value = parseExpression(true);
+    //     if (value.type() == ExpressionType.Error)
+    //         return errorExpressionToStatement((ErrorExpression) value);
+    //     if (current().type != TokenType.Semicolon)
+    //         return errorStatement("expected ';'");
+    //     step();
+    //     return new ExpressionStatement { value = value };
+    // }
+
+    public Expression parseExpression(bool allowAssignment) => parseOperations(0, allowAssignment);
 
     private Expression parseOperations(int minimumBindingPower = 0, bool allowAssignment = false) {
         var left = ((Func<Expression>) (() => {
@@ -68,12 +84,12 @@ class Parser {
                     step();
                     var arguments = new List<Expression>();
                     if (current().type != TokenType.RParen) {
-                        arguments.Add(parseExpression());
+                        arguments.Add(parseExpression(false));
                         while (current().type == TokenType.Comma) {
                             step();
                             if (current().type == TokenType.RParen)
                                 break;
-                            arguments.Add(parseExpression());
+                            arguments.Add(parseExpression(false));
                         }
                         if (current().type != TokenType.RParen)
                             return errorExpression("expected ')'");
@@ -92,7 +108,7 @@ class Parser {
                 if (leftBP < minimumBindingPower)
                     break;
                 step();
-                var right = parseOperations(rightBP);
+                var right = parseOperations(rightBP, allowAssignment);
                 if (right.type() == ExpressionType.Error)
                     return right;
                 var assignType = this.assignType(op.type);
@@ -208,68 +224,210 @@ class Parser {
     }
 
     private Expression parseIf() {
-        return errorExpression("if not implemented");
+        step();
+        var condition = parseExpression(false);
+        if (!currentIs(TokenType.LBrace))
+            return errorExpression("expected '{'");
+        var truthy = parseBlock();
+        if (currentIs(TokenType.Else)) {
+            step();
+            if (!currentIs(TokenType.LBrace))
+                return errorExpression("expected '{'");
+            var falsy = parseBlock();
+            return new IfElseExpression {
+                condition = condition,
+                truthy = truthy,
+                falsy = falsy,
+            };
+        } else {
+            return new IfExpression {
+                condition = condition,
+                body = truthy,
+            };
+        }
     }
 
     private Expression parseWhile() {
-        return errorExpression("while not implemented");
+        step();
+        var condition = parseExpression(false);
+        if (!currentIs(TokenType.LBrace))
+            return errorExpression("expected '{'");
+        var body = parseBlock();
+        return new WhileExpression {
+            condition = condition,
+            body = body,
+        };
     }
 
     private Expression parseFor() {
-        return errorExpression("for not implemented");
+        step();
+        var subject = parsePattern();
+        if (!currentIs(TokenType.In))
+            return errorExpression("expected 'in'");
+        step();
+        var value = parseExpression(false);
+        if (!currentIs(TokenType.LBrace))
+            return errorExpression("expected '{'");
+        var body = parseBlock();
+        return new ForExpression {
+            subject = subject,
+            value = value,
+            body = body,
+        };
     }
 
     private Expression parseBlock() {
-        return errorExpression("block not implemented");
+        step();
+        var statements = new List<Statement>();
+        var result = default(Expression?);
+        while (!currentIs(TokenType.Eof) && !currentIs(TokenType.RBrace)) {
+            if (currentIs(TokenType.Class)) {
+                return errorExpression("class not implemented");
+            } else if (currentIs(TokenType.Fn)) {
+                return errorExpression("fn not implemented");
+            } else if (currentIs(TokenType.Let)) {
+                step();
+                var subject = parseParameter();
+                if (subject.isError())
+                    return new ErrorExpression { error = subject.error() };
+                statements.Add(new LetStatement { subject = subject });
+                if (!currentIs(TokenType.Semicolon))
+                    return errorExpression("expected ';'");
+                step();
+            } else if (currentIs(TokenType.Return)) {
+                step();
+                var value = current().type switch {
+                    TokenType.Semicolon => null,
+                    _ => parseExpression(false),
+                };
+                if (value?.type() == ExpressionType.Error)
+                    return value;
+                statements.Add(new ReturnStatement { value = value });
+                if (!currentIs(TokenType.Semicolon))
+                    return errorExpression("expected ';'");
+                step();
+            } else if (currentIs(TokenType.Break)) {
+                step();
+                var value = current().type switch {
+                    TokenType.Semicolon => null,
+                    _ => parseExpression(false),
+                };
+                if (value?.type() == ExpressionType.Error)
+                    return value;
+                statements.Add(new BreakStatement { value = value });
+                if (!currentIs(TokenType.Semicolon))
+                    return errorExpression("expected ';'");
+                step();
+            } else if (currentIs(TokenType.Continue)) {
+                step();
+                var value = current().type switch {
+                    TokenType.Semicolon => null,
+                    _ => parseExpression(false),
+                };
+                if (value?.type() == ExpressionType.Error)
+                    return value;
+                statements.Add(new ContinueStatement { value = value });
+                if (!currentIs(TokenType.Semicolon))
+                    return errorExpression("expected ';'");
+                step();
+            } else {
+                var expression = parseExpression(true);
+                if (expression.type() == ExpressionType.Error)
+                    return expression;
+                if (currentIs(TokenType.Semicolon)) {
+                    step();
+                    statements.Add(new ExpressionStatement { value = expression });
+                } else if (currentIs(TokenType.RBrace)) {
+                    result = expression;
+                } else {
+                    return errorExpression("expected ';' or '}', got " + current());
+                }
+            }
+        }
+        if (!currentIs(TokenType.RBrace))
+            return errorExpression("expected '}'");
+        step();
+        return new BlockExpression {
+            statements = statements.ToArray(),
+            result = result,
+        };
     }
 
     private Expression parseAtom() {
         var value = current().type switch {
-            TokenType.Id => parseId(),
-            TokenType.Int => parseInt(),
-            TokenType.Float => parseFloat(),
-            TokenType.Char => parseChar(),
-            TokenType.String => parseString(),
-            TokenType.False => parseBool(),
-            TokenType.True => parseBool(),
-            TokenType.Null => parseNull(),
+            TokenType.Id => new IdExpression { value = current().value },
+            TokenType.Int => new IntExpression { value = long.Parse(current().value) },
+            TokenType.Float => new FloatExpression { value = double.Parse(current().value) },
+            TokenType.Char => new CharExpression { value = parseCharValue(current().value) },
+            TokenType.String => new StringExpression { value = parseStringValue(current().value) },
+            TokenType.False => new BoolExpression { value = false },
+            TokenType.True => new BoolExpression { value = true },
+            TokenType.Null => new NullExpression(),
             _ => errorExpression("expected value"),
         };
         step();
         return value;
     }
 
-    private Expression parseId() => new IdExpression { value = current().value };
-
-    private Expression parseInt() => new IntExpression { value = long.Parse(current().value) };
-
-    private Expression parseFloat() => new FloatExpression { value = double.Parse(current().value) };
-
-    private Expression parseChar() {
-        // TODO escape chars
-        return new CharExpression { value = parseCharValue(current().value) };
+    private Parameter parseParameter() {
+        var subject = parsePattern();
+        var type = default(Type?);
+        if (currentIs(TokenType.Colon)) {
+            step();
+            type = parseType();
+        }
+        var value = default(Expression?);
+        if (currentIs(TokenType.Equal)) {
+            step();
+            value = parseExpression(false);
+        }
+        return new Parameter {
+            subject = subject,
+            type = type,
+            value = value,
+        };
     }
 
-    private Expression parseString() {
-        // TODO escape chars
-        var value = current().value;
-        return new StringExpression { value = parseStringValue(value) };
+    private Type parseType() {
+        var value = current().type switch {
+            TokenType.Id => new IdType { value = current().value },
+            _ => errorType("expected type"),
+        };
+        step();
+        return value;
     }
 
-    private Expression parseBool() {
-        return new BoolExpression { value = current().type == TokenType.True };
+    private Pattern parsePattern() {
+        var value = current().type switch {
+            TokenType.Id => new IdPattern { value = current().value },
+            _ => errorPattern("expected pattern"),
+        };
+        step();
+        return value;
     }
-
-    private Expression parseNull() => new NullExpression();
 
     private Token current() => this.tokens.peek();
-
     private void step() { this.tokens.next(); }
-
     private bool currentIs(TokenType type) => current().type == type;
 
+    private Type errorType(string message) {
+        return new ErrorType { error = makeError(message) };
+    }
+
+    private Pattern errorPattern(string message) {
+        return new ErrorPattern { error = makeError(message) };
+    }
+
     private Expression errorExpression(string message) {
-        return new ErrorExpression {
+        return new ErrorExpression { error = makeError(message) };
+    }
+
+    private Statement errorStatement(string message) {
+        return new ErrorStatement { error = makeError(message) };
+    }
+
+    private Error makeError(string message) {
+        return new Error {
             line = tokens.peek().line,
             column = tokens.peek().column,
             message = message,
