@@ -64,6 +64,12 @@ internal class Program {
 
         test(@"
             {
+
+                fn main(a: int) -> int {
+                    print(a);
+                    a + 4
+                }
+
                 let a = 5;
                 let b = a + 5;
                 for a in b {

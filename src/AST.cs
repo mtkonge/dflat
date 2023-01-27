@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 
-namespace DFLAT;
+namespace DFLAT.Parsed;
 
 struct Error {
     public int line, column;
@@ -377,7 +377,7 @@ struct ClassStatement : Statement {
 struct FnStatement : Statement {
     public string subject;
     public Parameter[] parameters;
-    public Type returnType;
+    public Type? returnType;
     public Expression body;
 
     public StatementType type() => StatementType.Fn;
@@ -403,7 +403,5 @@ struct BreakStatement : Statement {
 }
 
 struct ContinueStatement : Statement {
-    public Expression? value;
-
     public StatementType type() => StatementType.Continue;
 }

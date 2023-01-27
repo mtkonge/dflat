@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using DFLAT.Parsed;
+using Type = DFLAT.Parsed.Type;
 
 namespace DFLAT;
 
@@ -10,21 +12,127 @@ class Parser {
         this.tokens = tokens;
     }
 
-    // public Statement parseStatement() {
-    //     return current().type switch {
-    //         _ => parseExpressionStatement(),
-    //     };
-    // }
+    public IEnumerable<Statement> parseStatements() {
+        var statements = new List<Statement>();
+        // while (!currentIs(TokenType.Eof)) { statements.Add()}
+        return statements;
+    }
 
-    // public Statement parseExpressionStatement() {
-    //     var value = parseExpression(true);
-    //     if (value.type() == ExpressionType.Error)
-    //         return errorExpressionToStatement((ErrorExpression) value);
-    //     if (current().type != TokenType.Semicolon)
-    //         return errorStatement("expected ';'");
-    //     step();
-    //     return new ExpressionStatement { value = value };
-    // }
+    private Statement parseStatement() {
+        var statement = current().type switch {
+            TokenType.Class => errorStatement("class not implemented"),
+            TokenType.Fn => errorStatement("fn not implemented"),
+            TokenType.If => convertExpressionToStatement(parseIf()),
+            TokenType.While => convertExpressionToStatement(parseWhile()),
+            TokenType.For => convertExpressionToStatement(parseFor()),
+            TokenType.LBrace => convertExpressionToStatement(parseBlock()),
+            _ => parseSingleLineStatement(),
+        };
+        skipSemicolon();
+        if (statement.type() == StatementType.Error)
+            return statement;
+        return statement;
+    }
+
+    private Statement parseSingleLineStatement() {
+        var statement = current().type switch {
+            TokenType.Class => errorStatement("class not implemented"),
+            TokenType.Fn => errorStatement("fn not implemented"),
+            _ => parseExpressionStatement(),
+        };
+        if (statement.type() == StatementType.Error)
+            return statement;
+        if (!currentIs(TokenType.Semicolon))
+            return errorStatement("expected ';'");
+        skipSemicolon();
+        return statement;
+    }
+
+    private Statement parseFn() {
+        step();
+        if (!currentIs(TokenType.Id))
+            return errorStatement("expected Id");
+        var subject = current().value;
+        step();
+        if (!currentIs(TokenType.LParen))
+            return errorStatement("expected Id");
+        step();
+        var parameters = new List<Parameter>();
+        while (!currentIs(TokenType.Eof) && !currentIs(TokenType.RParen)) {
+            var parameter = parseParameter();
+            if (parameter.isError())
+                new ErrorStatement { error = parameter.error() };
+            parameters.Add(parameter);
+            if (currentIs(TokenType.Comma))
+                step();
+            else if (!currentIs(TokenType.RParen))
+                return errorStatement("expected ',' or '}'");
+        }
+        if (!currentIs(TokenType.RParen))
+            return errorStatement("expected '}'");
+        step();
+        var returnType = default(Type?);
+        if (currentIs(TokenType.ThinArrow)) {
+            step();
+            returnType = parseType();
+            if (returnType.type() == TypeType.Error)
+                new ErrorStatement { error = ((ErrorType) returnType).error };
+        }
+        var body = parseBlock();
+        if (body.type() == ExpressionType.Error)
+            return new ErrorStatement { error = ((ErrorExpression) body).error };
+        return new FnStatement {
+            subject = subject,
+            parameters = parameters.ToArray(),
+            returnType = returnType,
+            body = body,
+        };
+    }
+
+    private Statement parseLet() {
+        step();
+        var subject = parseParameter();
+        if (subject.isError())
+            return new ErrorStatement { error = subject.error() };
+        return new LetStatement { subject = subject };
+    }
+
+    private Statement parseReturn(Func<TokenType, bool> isStopToken) {
+        step();
+        var value = current().type switch {
+            var t when isStopToken(t) => null,
+            _ => parseExpression(false),
+        };
+        if (value?.type() == ExpressionType.Error)
+            return new ErrorStatement { error = ((ErrorExpression) value).error };
+        return new ReturnStatement { value = value };
+    }
+
+    private Statement parseBreak(Func<TokenType, bool> isStopToken) {
+        step();
+        var value = current().type switch {
+            var t when isStopToken(t) => null,
+            _ => parseExpression(false),
+        };
+        if (value?.type() == ExpressionType.Error)
+            return new ErrorStatement { error = ((ErrorExpression) value).error };
+        return new BreakStatement { value = value };
+    }
+
+    private Statement parseContinue() {
+        step();
+        return new ContinueStatement { };
+    }
+
+    private Statement parseExpressionStatement() {
+        return convertExpressionToStatement(parseExpression(true));
+    }
+
+    private Statement convertExpressionToStatement(Expression value) {
+        if (value.type() == ExpressionType.Error)
+            return new ErrorStatement { error = ((ErrorExpression) value).error };
+        return new ExpressionStatement { value = value };
+    }
 
     public Expression parseExpression(bool allowAssignment) => parseOperations(0, allowAssignment);
 
@@ -284,58 +392,59 @@ class Parser {
             if (currentIs(TokenType.Class)) {
                 return errorExpression("class not implemented");
             } else if (currentIs(TokenType.Fn)) {
-                return errorExpression("fn not implemented");
+                var statement = parseFn();
+                if (statement.type() == StatementType.Error)
+                    return new ErrorExpression { error = ((ErrorStatement) statement).error };
+                statements.Add(statement);
+                skipSemicolon();
             } else if (currentIs(TokenType.Let)) {
-                step();
-                var subject = parseParameter();
-                if (subject.isError())
-                    return new ErrorExpression { error = subject.error() };
-                statements.Add(new LetStatement { subject = subject });
+                var statement = parseLet();
+                if (statement.type() == StatementType.Error)
+                    return new ErrorExpression { error = ((ErrorStatement) statement).error };
+                statements.Add(statement);
                 if (!currentIs(TokenType.Semicolon))
                     return errorExpression("expected ';'");
-                step();
+                skipSemicolon();
             } else if (currentIs(TokenType.Return)) {
-                step();
-                var value = current().type switch {
-                    TokenType.Semicolon => null,
-                    _ => parseExpression(false),
-                };
-                if (value?.type() == ExpressionType.Error)
-                    return value;
-                statements.Add(new ReturnStatement { value = value });
+                var statement = parseReturn((type) => type == TokenType.Semicolon);
+                if (statement.type() == StatementType.Error)
+                    return new ErrorExpression { error = ((ErrorStatement) statement).error };
+                statements.Add(statement);
                 if (!currentIs(TokenType.Semicolon))
                     return errorExpression("expected ';'");
-                step();
+                skipSemicolon();
             } else if (currentIs(TokenType.Break)) {
-                step();
-                var value = current().type switch {
-                    TokenType.Semicolon => null,
-                    _ => parseExpression(false),
-                };
-                if (value?.type() == ExpressionType.Error)
-                    return value;
-                statements.Add(new BreakStatement { value = value });
+                var statement = parseBreak((type) => type == TokenType.Semicolon);
+                if (statement.type() == StatementType.Error)
+                    return new ErrorExpression { error = ((ErrorStatement) statement).error };
+                statements.Add(statement);
                 if (!currentIs(TokenType.Semicolon))
                     return errorExpression("expected ';'");
-                step();
+                skipSemicolon();
             } else if (currentIs(TokenType.Continue)) {
-                step();
-                var value = current().type switch {
-                    TokenType.Semicolon => null,
-                    _ => parseExpression(false),
-                };
-                if (value?.type() == ExpressionType.Error)
-                    return value;
-                statements.Add(new ContinueStatement { value = value });
+                var statement = parseContinue();
+                if (statement.type() == StatementType.Error)
+                    return new ErrorExpression { error = ((ErrorStatement) statement).error };
+                statements.Add(statement);
                 if (!currentIs(TokenType.Semicolon))
                     return errorExpression("expected ';'");
-                step();
+                skipSemicolon();
+            } else if (currentIs(TokenType.If) && currentIs(TokenType.While) && currentIs(TokenType.For)) {
+                var expression = parseExpression(false);
+                if (expression.type() == ExpressionType.Error)
+                    return expression;
+                if (currentIs(TokenType.RBrace)) {
+                    result = expression;
+                } else {
+                    skipSemicolon();
+                    statements.Add(new ExpressionStatement { value = expression });
+                }
             } else {
                 var expression = parseExpression(true);
                 if (expression.type() == ExpressionType.Error)
                     return expression;
                 if (currentIs(TokenType.Semicolon)) {
-                    step();
+                    skipSemicolon();
                     statements.Add(new ExpressionStatement { value = expression });
                 } else if (currentIs(TokenType.RBrace)) {
                     result = expression;
@@ -351,6 +460,11 @@ class Parser {
             statements = statements.ToArray(),
             result = result,
         };
+    }
+
+    private void skipSemicolon() {
+        while (currentIs(TokenType.Semicolon))
+            step();
     }
 
     private Expression parseAtom() {

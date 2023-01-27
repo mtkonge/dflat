@@ -65,22 +65,7 @@ type ->
 
 arguments -> (expression ("," expression):* ",":?):?
 
-expression ->
-    | if
-    | while
-    | for
-    | block
-    | operation
-
-if -> "if" expression block ("else" block):?
-
-while -> "while" expression block
-
-for -> "for" pattern "in" expression block
-
-block -> "{" block_statements "}"
-
-block_statements -> (statements ";"):* statement:?
+expression -> operation
 
 operation -> prec1
 prec1 -> prec2
@@ -148,7 +133,25 @@ prec17 ->
     
 prec18 ->
     | "(" expression ")"
+    | operand
+
+operand ->
+    | if
+    | while
+    | for
+    | block
     | atom
+
+if -> "if" expression block ("else" block):?
+
+while -> "while" expression block
+
+for -> "for" pattern "in" expression block
+
+block -> "{" block_statements "}"
+
+block_statements -> (statements ";"):* statement:?
+
 
 atom ->
     | Id
