@@ -14,14 +14,19 @@ class Parser {
 
     public IEnumerable<Statement> parseStatements() {
         var statements = new List<Statement>();
-        // while (!currentIs(TokenType.Eof)) { statements.Add()}
+        while (!currentIs(TokenType.Eof)) {
+            var statement = parseStatement();
+            if (statement.type() == StatementType.Error)
+                return new List<Statement> { statement };
+            statements.Add(statement);
+        }
         return statements;
     }
 
     private Statement parseStatement() {
         var statement = current().type switch {
             TokenType.Class => errorStatement("class not implemented"),
-            TokenType.Fn => errorStatement("fn not implemented"),
+            TokenType.Fn => parseFn(),
             TokenType.If => convertExpressionToStatement(parseIf()),
             TokenType.While => convertExpressionToStatement(parseWhile()),
             TokenType.For => convertExpressionToStatement(parseFor()),

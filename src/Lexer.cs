@@ -317,7 +317,7 @@ class Lexer : TokenIterator {
         if (this.tokens.Count > 0)
             return this.tokens.Peek();
         else
-            return new Token(TokenType.Eof, "", line, column);
+            return new Token(TokenType.Eof, "", column, line);
     }
     public Token[] collect() {
         var tokens = new List<Token>();

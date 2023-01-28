@@ -90,11 +90,19 @@ internal class Program {
 
     }
 
+    static void compileFile(string filepath) {
+        var text = System.IO.File.ReadAllText(filepath);
+        var ast = new Parser(new Lexer(text)).parseStatements();
+        if (ast.Count() >= 1 && ast.ElementAt(0).type() == Parsed.StatementType.Error)
+            Console.WriteLine($"parser error: {((Parsed.ErrorStatement) ast.ElementAt(0)).error}");
+        Console.WriteLine("no more work to be done");
+    }
 
     static void Main(string[] args) {
         Console.WriteLine("Hello World!");
 
-        testAll();
+        // testAll();
+        compileFile("examples/hello.df");
 
         Console.WriteLine("!dlroW olleH");
     }
