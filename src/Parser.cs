@@ -347,7 +347,7 @@ class Parser {
             if (!currentIs(TokenType.LBrace))
                 return errorExpression("expected '{'");
             var falsy = parseBlock();
-            return new IfElseExpression {
+            return new IfExpression {
                 condition = condition,
                 truthy = truthy,
                 falsy = falsy,
@@ -355,7 +355,8 @@ class Parser {
         } else {
             return new IfExpression {
                 condition = condition,
-                body = truthy,
+                truthy = truthy,
+                falsy = null,
             };
         }
     }

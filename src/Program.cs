@@ -99,11 +99,7 @@ internal class Program {
     }
 
     static void Main(string[] args) {
-        Console.WriteLine("Hello World!");
-
-        // testAll();
-        compileFile("examples/hello.df");
-
-        Console.WriteLine("!dlroW olleH");
+        testAll();
+        // compileFile("examples/hello.df");
     }
 }

@@ -29,6 +29,7 @@ struct IdType : Type {
     public string value;
 
     public TypeType type() => TypeType.Id;
+    public override string ToString() => value.ToString();
 }
 
 enum PatternType {
@@ -88,16 +89,8 @@ struct ErrorExpression : Expression {
 
 struct IfExpression : Expression {
     public Expression condition;
-    public Expression body;
-
-    public ExpressionType type() => ExpressionType.If;
-    public override string ToString() => $"if {condition} {body}";
-}
-
-struct IfElseExpression : Expression {
-    public Expression condition;
     public Expression truthy;
-    public Expression falsy;
+    public Expression? falsy;
 
     public ExpressionType type() => ExpressionType.IfElse;
     public override string ToString() => $"if {condition} {truthy} else {falsy}";
@@ -381,6 +374,12 @@ struct FnStatement : Statement {
     public Expression body;
 
     public StatementType type() => StatementType.Fn;
+    public override string ToString() {
+        var parameters = string.Join(", ", this.parameters.Select((parameter) => parameter.ToString()));
+        var returnType = this.returnType != null ? $" -> {this.returnType}" : "";
+        var body = $" {this.body}";
+        return $"fn {subject}({parameters}){returnType}{body}";
+    }
 }
 
 struct LetStatement : Statement {
@@ -394,14 +393,20 @@ struct ReturnStatement : Statement {
     public Expression? value;
 
     public StatementType type() => StatementType.Return;
+    public override string ToString() =>
+        this.value != null ? $"return {value}" : "return";
 }
 
 struct BreakStatement : Statement {
     public Expression? value;
 
     public StatementType type() => StatementType.Break;
+    public override string ToString() =>
+        this.value != null ? $"break {value}" : "break";
 }
 
 struct ContinueStatement : Statement {
     public StatementType type() => StatementType.Continue;
+    public override string ToString() =>
+        "continue";
 }
